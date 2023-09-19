@@ -1,87 +1,56 @@
-from pyrogram import Client, filters
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
+import asyncio
+import logging
+import sys
+from os import getenv
 
-bot = Client(
-    "My First Project",
-    api_id=8862878,
-    api_hash="3052ebee93b7f4a44830119d705878bf",
-    bot_token="6526048633:AAHWo8UD4h7R64LV_R7U4YcXg-fU_7WiHLY"
-)
+from aiogram import Bot, Dispatcher, Router, types
+from aiogram.enums import ParseMode
+from aiogram.filters import CommandStart
+from aiogram.types import Message
+from aiogram.utils.markdown import hbold
 
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
+# Bot token can be obtained via https://t.me/BotFather
+TOKEN = getenv("BOT_TOKEN", "6526048633:AAHWo8UD4h7R64LV_R7U4YcXg-fU_7WiHLY")
+
+# All handlers should be attached to the Router (or Dispatcher)
+dp = Dispatcher()
 
 
-@bot.on_message(filters.command("start") & filters.private)  # Creating a command
-def start(bot, message):
-    bot.send_message(message.chat.id, "Hello, I am Max Maven. I know everything about Magic")  # Calling a method
+@dp.message(CommandStart())
+async def command_start_handler(message: Message) -> None:
+    """
+    This handler receives messages with `/start` command
+    """
+    # Most event objects have aliases for API methods that can be called in events' context
+    # For example if you want to answer to incoming message you can use `message.answer(...)` alias
+    # and the target chat will be passed to :ref:`aiogram.methods.send_message.SendMessage`
+    # method automatically or call API method directly via
+    # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
+    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!")
 
 
-@bot.on_message(filters.command("help"))
-def help(bot, message):
-    bot.send_message(message.chat.id, "This is the help section of this bot")
+# Echo handler
+@dp.message()
+async def echo_handler(message: types.Message) -> None:
+    """
+    Handler will forward receive a message back to the sender
+
+    By default, message handler will handle all message types (like a text, photo, sticker etc.)
+    """
+    try:
+        # Send a copy of the received message
+        await message.send_copy(chat_id=message.chat.id)
+    except TypeError:
+        # But not all the types is supported to be copied so need to handle it
+        await message.answer("Nice try!")
 
 
-@bot.on_message(filters.command("about"))
-def about(bot, message):
-    bot.send_message(message.chat.id, "This is the about section of this bot. This bot is made by Max Maven")
+async def main() -> None:
+    # Initialize Bot instance with a default parse mode which will be passed to all API calls
+    bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+    # And the run events dispatching
+    await dp.start_polling(bot)
 
 
-@bot.on_message(filters.text & filters.regex(r'^hi$'))
-def command1(client, message):
-    message.reply_text("Hello there!")
-
-
-@bot.on_message(filters.command("notify"))
-def notify(bot, message):
-    bot.send_message(message.chat.id, "Getting Notifications")
-
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get("https://e.pcloud.com/")
-
-    # Find the username field by class and name attributes and enter the username
-    username_field = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'input.WebStyles__Input-gmVoag.caiDsQ[name="email"]')))
-    username_field.send_keys("prahladkumar3741@gmail.com")
-
-    login_button = driver.find_element(By.CLASS_NAME, "butt.submitbut.SubmitButton__Button-btzder.jEnoTE")
-    login_button.click()
-
-    password_field = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'input.WebStyles__Input-gmVoag.caiDsQ[name="password"]')))
-    password_field.send_keys('Qs%eQe@/DAHZCe4')
-
-    submit_button = driver.find_element(By.CLASS_NAME, 'SubmitButton__Button-btzder.jEnoTE')
-    submit_button.click()
-
-    print('Login Successfully !!')
-    time.sleep(5)
-
-    # wait for the bell icon to be clickable and click it
-    bell_icon = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.NotificationsBell__NotificationsBellLight-fpUEGl.gRBuVI')))
-    bell_icon.click()
-
-    notifications = WebDriverWait(driver, 10).until(EC.presence_of_element_located(
-        (By.CSS_SELECTOR, 'div.NotificationsPopoverWrap__NotificationsInner-ciUPXa.QyHmz')))
-    output = str(notifications.text)
-    print(output)
-
-    driver.close()
-    bot.send_message(message.chat.id, "New Notification arrived!")
-
-    lines = output.strip().splitlines()
-    for line in lines:
-        bot.send_message(message.chat.id, line)
-
-
-print("Bot Started")
-
-bot.run()
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+asyncio.run(main())
