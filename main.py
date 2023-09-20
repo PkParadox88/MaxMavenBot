@@ -38,5 +38,5 @@ def main():
             offset = update.get("update_id") + 1
 
 
-if __name__ == "__main__":
-    main()
+
+main()
