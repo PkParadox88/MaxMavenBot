@@ -1,27 +1,12 @@
 from flask import Flask, request, jsonify
 
 import requests
-import json
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
 
 app = Flask(__name__)
 
 
-# Configure Selenium for Chrome
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
-driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
-driver.get("https://e.pcloud.com/")
+
 
 # Replace with your Telegram bot token
 BOT_TOKEN = "6526048633:AAHWo8UD4h7R64LV_R7U4YcXg-fU_7WiHLY"
@@ -43,33 +28,7 @@ def send_message(chat_id, text):
 
 # Function to handle pCloud notifications
 def pcloud_notification(username, password):
-    # Find the username field by class and name attributes and enter the username
-    username_field = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'input.WebStyles__Input-gmVoag.caiDsQ[name="email"]')))
-    username_field.send_keys(username)
-
-    login_button = driver.find_element(By.CLASS_NAME, "butt.submitbut.SubmitButton__Button-btzder.jEnoTE")
-    login_button.click()
-
-    password_field = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'input.WebStyles__Input-gmVoag.caiDsQ[name="password"]')))
-    password_field.send_keys(password)
-
-    submit_button = driver.find_element(By.CLASS_NAME, 'SubmitButton__Button-btzder.jEnoTE')
-    submit_button.click()
-
-    print('Login Successfully !!')
-    time.sleep(5)
-
-    # wait for the bell icon to be clickable and click it
-    bell_icon = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.NotificationsBell__NotificationsBellLight-fpUEGl.gRBuVI')))
-    bell_icon.click()
-
-    notifications = WebDriverWait(driver, 10).until(EC.presence_of_element_located(
-        (By.CSS_SELECTOR, 'div.NotificationsPopoverWrap__NotificationsInner-ciUPXa.QyHmz')))
-    output = str(notifications.text)
-    print(output)
+    print("hello bro")
 
 
 @app.route('/')
