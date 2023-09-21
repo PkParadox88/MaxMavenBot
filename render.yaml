@@ -1,0 +1,6 @@
+services:
+  - name: maxmaven
+    buildCommand: python main.py
+    environment:
+      - VAR1=value1
+    initCommand: ./install_chrome.sh
