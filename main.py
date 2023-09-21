@@ -3,8 +3,8 @@ from flask import Flask, request, jsonify
 import requests
 import json
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.firefox.service import Service
+from webdriver_manager.firefox import GeckoDriverManager
 
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -15,12 +15,12 @@ import time
 app = Flask(__name__)
 
 
-# Configure Selenium
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+# Configure Selenium for Firefox
+firefox_options = webdriver.FirefoxOptions()
+firefox_options.add_argument("--headless")
+firefox_options.add_argument("--no-sandbox")
+firefox_options.add_argument("--disable-dev-shm-usage")
+driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=firefox_options)
 driver.get("https://e.pcloud.com/")
 
 # Replace with your Telegram bot token
