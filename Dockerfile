@@ -4,22 +4,27 @@ FROM python:3.7-slim
 # Set the working directory to /app
 WORKDIR /app
 
-# Install Firefox and dependencies
-RUN apt-get update && apt-get install -y \
-    firefox-esr \
-    wget \
-    unzip
-
-# Download and install the geckodriver for Firefox
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.29.1/geckodriver-v0.29.1-linux64.tar.gz
-RUN tar -xvzf geckodriver-v0.29.1-linux64.tar.gz
-RUN chmod +x geckodriver
-RUN mv geckodriver /usr/local/bin/
-RUN rm geckodriver-v0.29.1-linux64.tar.gz
+# Install Chrome
+RUN apt-get update && apt-get install -y wget \
+    && STORAGE_DIR=/opt/render/project/.render \
+    && if [ ! -d "$STORAGE_DIR/chrome" ]; then \
+        echo "...Downloading Chrome" \
+        && mkdir -p "$STORAGE_DIR/chrome" \
+        && cd "$STORAGE_DIR/chrome" \
+        && wget -P ./ https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+        && dpkg -x ./google-chrome-stable_current_amd64.deb "$STORAGE_DIR/chrome" \
+        && rm ./google-chrome-stable_current_amd64.deb \
+        && cd "$HOME/project/src" \
+        && echo "...Chrome downloaded and installed"; \
+    else \
+        echo "...Using Chrome from cache"; \
+    fi \
+    && export PATH="${PATH}:/opt/render/project/.render/chrome/opt/google/chrome"
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && apt-get clean
 
 # Copy the rest of your application code
 COPY . .
@@ -28,7 +33,7 @@ COPY . .
 EXPOSE 80
 
 # Define environment variable
-ENV NAME World
+ENV NAME=World
 
 # Run your Flask app
 CMD ["python", "app.py"]
